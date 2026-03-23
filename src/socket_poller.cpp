@@ -529,7 +529,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
         usleep (timeout_ * 1000);
         return -1;
 #elif defined ZMQ_HAVE_OSX
-        usleep (timeout_ * 1000);
+        usleep ((unsigned int)(timeout_ * 1000));
         errno = EAGAIN;
         return -1;
 #elif defined ZMQ_HAVE_VXWORKS
