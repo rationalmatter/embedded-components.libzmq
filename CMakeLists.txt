@@ -1,11 +1,9 @@
 # CMake build script for ZeroMQ
-project(ZeroMQ)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
-  cmake_minimum_required(VERSION 3.0.2)
-else()
-  cmake_minimum_required(VERSION 2.8.12)
-endif()
+
+cmake_minimum_required(VERSION 3.10)
+
+project(ZeroMQ)
 
 include(CheckIncludeFiles)
 include(CheckCCompilerFlag)
@@ -258,15 +256,16 @@ endif()
 # Select curve encryption library, defaults to disabled To use libsodium instead, use --with-libsodium(must be
 # installed) To disable curve, use --disable-curve
 
-option(WITH_LIBSODIUM "Use libsodium" OFF)
-option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
+option(WITH_LIBSODIUM "Use libsodium" ON)
+option(WITH_LIBSODIUM_STATIC "Use static libsodium library" ON)
 option(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "Automatically close libsodium randombytes. Not threadsafe without getrandom()" ON)
-option(ENABLE_CURVE "Enable CURVE security" OFF)
+option(ENABLE_CURVE "Enable CURVE security" ON)
 
 if(ENABLE_CURVE)
   if(WITH_LIBSODIUM)
-    find_package("sodium")
-    if(SODIUM_FOUND)
+    # we do not find sodium in system, instead use our prebuild one passed from build.py
+    #find_package("sodium")
+    #if(SODIUM_FOUND)
       message(STATUS "Using libsodium for CURVE security")
       include_directories(${SODIUM_INCLUDE_DIRS})
       link_directories(${SODIUM_LIBRARY_DIRS})
@@ -278,12 +277,7 @@ if(ENABLE_CURVE)
       if (ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE)
         set(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE 1)
       endif()
-    else()
-      message(
-        ERROR
-          "libsodium not installed, you may want to install libsodium and run cmake again"
-      )
-    endif()
+    #endif()
   endif()
 else()
   message(STATUS "CURVE security is disabled")
@@ -1303,7 +1297,7 @@ endif()
 
 # -----------------------------------------------------------------------------
 # output
-option(BUILD_SHARED "Whether or not to build the shared object" ON)
+option(BUILD_SHARED "Whether or not to build the shared object" OFF)
 option(BUILD_STATIC "Whether or not to build the static archive" ON)
 
 if(MSVC)
@@ -1649,7 +1643,7 @@ endif()
 if(${CMAKE_VERSION} VERSION_LESS 3.12.3)
   option(BUILD_TESTS "Whether or not to build the tests" OFF)
 else()
-  option(BUILD_TESTS "Whether or not to build the tests" ON)
+  option(BUILD_TESTS "Whether or not to build the tests" OFF)
 endif()
 
 set(ZMQ_BUILD_TESTS
