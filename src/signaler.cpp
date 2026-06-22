@@ -365,6 +365,13 @@ int zmq::signaler_t::recv_failable ()
                       || errno == EINTR);
     }
 #endif
+    //  recv() returning 0 means the peer end of the command pipe was closed by
+    //  a terminating context on another thread; report a transient miss rather
+    //  than aborting the embedding process during teardown.
+    if (nbytes == 0) {
+        errno = EAGAIN;
+        return -1;
+    }
     zmq_assert (nbytes == sizeof (dummy));
     zmq_assert (dummy == 0);
 #endif
