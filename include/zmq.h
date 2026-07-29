@@ -173,6 +173,22 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum_);
 /*  Run-time API version detection                                            */
 ZMQ_EXPORT void zmq_version (int *major_, int *minor_, int *patch_);
 
+/*  Reporter invoked immediately before the library terminates the process    */
+/*  on a failed internal assertion. It runs synchronously, on the thread that */
+/*  hit the failure, and receives the same message the assertion reports on   */
+/*  stderr, so that an embedding environment can observe the abort reason     */
+/*  before termination and attach it to its own diagnostics.                  */
+/*                                                                            */
+/*  Termination follows regardless of what the reporter does, so it should do */
+/*  as little work as possible and must not assume execution will resume.     */
+typedef void (zmq_abort_reporter_fn) (const char *errmsg_);
+
+/*  Registers reporter_ (NULL unregisters) and returns the reporter that was  */
+/*  registered before, or NULL if there was none, so that a caller can chain  */
+/*  to it, restore it, or detect that it has already registered its own.      */
+ZMQ_EXPORT zmq_abort_reporter_fn *
+zmq_set_abort_reporter (zmq_abort_reporter_fn *reporter_);
+
 /******************************************************************************/
 /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
 /******************************************************************************/

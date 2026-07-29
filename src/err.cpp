@@ -47,8 +47,26 @@ const char *zmq::errno_to_string (int errno_)
     }
 }
 
+//  Reporter handed the abort reason just before the process goes down; see
+//  zmq_set_abort_reporter () in the public header. Registered once by the
+//  embedding environment during start-up and only read afterwards, on a
+//  thread that is already on its way to terminating the process.
+static zmq_abort_reporter_fn *s_abort_reporter = NULL;
+
+zmq_abort_reporter_fn *zmq_set_abort_reporter (zmq_abort_reporter_fn *reporter_)
+{
+    zmq_abort_reporter_fn *const previous = s_abort_reporter;
+    s_abort_reporter = reporter_;
+    return previous;
+}
+
 void zmq::zmq_abort (const char *errmsg_)
 {
+    //  Hand the reason to the embedding environment while the process is
+    //  still alive. Synchronous on purpose: nothing below waits for it.
+    if (s_abort_reporter)
+        s_abort_reporter (errmsg_);
+
 #if defined ZMQ_HAVE_WINDOWS
 
     //  Raise STATUS_FATAL_APP_EXIT.
